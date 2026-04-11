@@ -1,0 +1,1 @@
+export { AdminFareRules as default } from './AdminCities';

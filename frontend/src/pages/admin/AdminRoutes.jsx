@@ -1,0 +1,1 @@
+export { AdminRoutes as default } from './AdminCities';
