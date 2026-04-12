@@ -18,7 +18,7 @@ const adminRoutes = require('./routes/admin');
 const profileRoutes = require('./routes/profile');
 
 const app = express();
-
+app.set('trust proxy', true);
 // Connect to MongoDB
 connectDB();
 

@@ -51,9 +51,7 @@ class RoutingService {
     return { graph };
   }
 
-  /**
-   * Dijkstra's algorithm for shortest path by distance.
-   */
+  // Dijkstra algo 
   dijkstra(graph, sourceId, destinationId, locationMap) {
     const distances = {};
     const durations = {};
