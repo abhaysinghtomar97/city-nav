@@ -40,17 +40,29 @@ export const AuthProvider = ({ children }) => {
   }, [clearAuth]);
 
   const login = async (email, password) => {
-    const res = await authApi.login({ email, password });
-    saveAuth(res.data.token, res.data.user);
-    toast.success(`Welcome back, ${res.data.user.name}!`);
-    return res.data.user;
+    try {
+      const res = await authApi.login({ email, password });
+      saveAuth(res.data.token, res.data.user);
+      toast.success(`Welcome back, ${res.data.user.name}!`);
+      return res.data.user;
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || err.response?.data?.errors?.[0]?.msg || 'Login failed';
+      toast.error(errorMsg);
+      throw err;
+    }
   };
 
   const register = async (name, email, password) => {
-    const res = await authApi.register({ name, email, password });
-    saveAuth(res.data.token, res.data.user);
-    toast.success('Account created successfully!');
-    return res.data.user;
+    try {
+      const res = await authApi.register({ name, email, password });
+      saveAuth(res.data.token, res.data.user);
+      toast.success('Account created successfully!');
+      return res.data.user;
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || err.response?.data?.errors?.[0]?.msg || 'Registration failed';
+      toast.error(errorMsg);
+      throw err;
+    }
   };
 
   const logout = () => {

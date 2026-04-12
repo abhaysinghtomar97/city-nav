@@ -20,7 +20,7 @@ class RoutingService {
       .populate('from', 'name coordinates')
       .populate('to', 'name coordinates');
 
-    const graph = {}; // adjacency list: { nodeId: [{ to, distanceKm, durationMinutes, edgeId }] }
+    const graph = {}; // adjacency list
 
     for (const edge of edges) {
       const fromId = edge.from._id.toString();
@@ -48,12 +48,11 @@ class RoutingService {
       }
     }
 
-    return { graph, edges };
+    return { graph };
   }
 
   /**
    * Dijkstra's algorithm for shortest path by distance.
-   * Returns: { path, totalDistanceKm, totalDurationMin, steps }
    */
   dijkstra(graph, sourceId, destinationId, locationMap) {
     const distances = {};
@@ -62,59 +61,71 @@ class RoutingService {
     const visited = new Set();
     const steps = {};
 
-    // Initialize
     for (const nodeId in graph) {
       distances[nodeId] = Infinity;
       durations[nodeId] = Infinity;
       previous[nodeId] = null;
       steps[nodeId] = null;
     }
+
     distances[sourceId] = 0;
     durations[sourceId] = 0;
 
-    // Simple priority queue using sorted array (suitable for small city graphs)
-    const priorityQueue = [{ nodeId: sourceId, dist: 0 }];
+    const queue = [{ nodeId: sourceId, dist: 0 }];
 
-    while (priorityQueue.length > 0) {
-      // Get minimum distance node
-      priorityQueue.sort((a, b) => a.dist - b.dist);
-      const { nodeId: current } = priorityQueue.shift();
+    while (queue.length > 0) {
+      queue.sort((a, b) => a.dist - b.dist);
+      const { nodeId: current } = queue.shift();
 
       if (visited.has(current)) continue;
       if (current === destinationId) break;
+
       visited.add(current);
 
       const neighbors = graph[current] || [];
+
       for (const neighbor of neighbors) {
         if (visited.has(neighbor.nodeId)) continue;
 
         const newDist = distances[current] + neighbor.distanceKm;
+
         if (newDist < distances[neighbor.nodeId]) {
           distances[neighbor.nodeId] = newDist;
-          durations[neighbor.nodeId] = durations[current] + neighbor.durationMinutes;
+          durations[neighbor.nodeId] =
+            durations[current] + neighbor.durationMinutes;
+
           previous[neighbor.nodeId] = current;
+
           steps[neighbor.nodeId] = {
-            from: locationMap[current] || current,
+            from: locationMap[current]?.name || current,
             to: neighbor.nodeName,
             distanceKm: neighbor.distanceKm,
             durationMin: neighbor.durationMinutes
           };
-          priorityQueue.push({ nodeId: neighbor.nodeId, dist: newDist });
+
+          queue.push({ nodeId: neighbor.nodeId, dist: newDist });
         }
       }
     }
 
-    if (distances[destinationId] === Infinity) {
-      return null; // No path found
-    }
+    if (distances[destinationId] === Infinity) return null;
 
-    // Reconstruct path
     const path = [];
     const pathSteps = [];
+
     let current = destinationId;
+
     while (current !== null) {
-      path.unshift(locationMap[current] || current);
+      path.unshift(
+        locationMap[current] || {
+          name: current,
+          lat: null,
+          lng: null
+        }
+      );
+
       if (steps[current]) pathSteps.unshift(steps[current]);
+
       current = previous[current];
     }
 
@@ -134,21 +145,30 @@ class RoutingService {
 
     const { graph } = await this.buildGraph(cityId, vehicleType);
 
-    // Build a quick lookup map for location IDs to names
-    const allLocations = await Location.find({ city: cityId, isActive: true }).select('name');
+    // 🔥 IMPORTANT FIX: include coordinates
+    const allLocations = await Location.find({
+      city: cityId,
+      isActive: true
+    }).select('name coordinates');
+
     const locationMap = {};
+
     for (const loc of allLocations) {
-      locationMap[loc._id.toString()] = loc.name;
+      locationMap[loc._id.toString()] = {
+        name: loc.name,
+        lat: loc.coordinates && loc.coordinates.lat ? loc.coordinates.lat : null,
+        lng: loc.coordinates && loc.coordinates.lng ? loc.coordinates.lng : null
+      };
     }
 
     const sourceStr = sourceId.toString();
     const destStr = destinationId.toString();
 
-    // Ensure nodes exist in graph
     if (!graph[sourceStr]) graph[sourceStr] = [];
     if (!graph[destStr]) graph[destStr] = [];
 
     const result = this.dijkstra(graph, sourceStr, destStr, locationMap);
+
     const queryDurationMs = Date.now() - startTime;
 
     return result ? { ...result, queryDurationMs } : null;

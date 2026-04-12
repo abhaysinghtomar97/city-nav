@@ -310,8 +310,10 @@ export function AdminRoutes() {
 
   const load = async () => {
     setLoading(true);
-    const [e, c] = await Promise.all([adminApi.getRoutes(cityFilter ? { cityId: cityFilter } : {}), citiesApi.getAll()]);
-    setEdges(e.data.edges || []); setCities(c.data.cities || []);
+    try {
+      const [e, c] = await Promise.all([adminApi.routes.getAll(cityFilter ? { cityId: cityFilter } : {}), citiesApi.getAll()]);
+      setEdges(e.data.edges || []); setCities(c.data.cities || []);
+    } catch (err) { console.error('Failed to load routes:', err); }
     setLoading(false);
   };
 
@@ -336,8 +338,8 @@ export function AdminRoutes() {
     e.preventDefault(); setSaving(true);
     try {
       const payload = { ...form, distanceKm: Number(form.distanceKm), durationMinutes: Number(form.durationMinutes) };
-      if (editing) await adminApi.updateRoute(editing, payload);
-      else await adminApi.createRoute(payload);
+      if (editing) await adminApi.routes.update(editing, payload);
+      else await adminApi.routes.create(payload);
       toast.success('Route saved!'); setModal(false); load();
     } catch (err) { toast.error(err.response?.data?.message || 'Save failed'); }
     finally { setSaving(false); }
@@ -375,7 +377,7 @@ export function AdminRoutes() {
                     </td>
                     <td><span className={`badge ${e.isBidirectional ? 'badge-green' : 'badge-amber'}`}>{e.isBidirectional ? '↔' : '→'}</span></td>
                     <td>
-                      <button className="btn btn-danger btn-sm" onClick={() => adminApi.deleteRoute(e._id).then(() => { toast.success('Deleted'); load(); })}>
+                      <button className="btn btn-danger btn-sm" onClick={() => adminApi.routes.delete(e._id).then(() => { toast.success('Deleted'); load(); }).catch(err => toast.error('Delete failed'))}>
                         <FiTrash2 size={12} />
                       </button>
                     </td>

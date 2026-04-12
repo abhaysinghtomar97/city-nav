@@ -1,4 +1,4 @@
-require('dotenv').config({ path: '../.env' });
+require('dotenv').config();
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const City = require('../models/City');
@@ -6,8 +6,8 @@ const Location = require('../models/Location');
 const RouteEdge = require('../models/RouteEdge');
 const FareRule = require('../models/FareRule');
 const User = require('../models/User');
-
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/cityroute';
+console.log("env: ", process.env.MONGODB_URI)
+const MONGODB_URI = process.env.MONGODB_URI ;
 
 async function seed() {
   await mongoose.connect(MONGODB_URI);
@@ -22,15 +22,20 @@ async function seed() {
   console.log('🗑️  Cleared existing data');
 
   // ─── USERS ────────────────────────────────────────────
-  const adminUser = await User.create({
-    name: 'Admin User', email: 'admin@cityroute.in',
-    password: 'admin@123', role: 'admin'
-  });
-  const demoUser = await User.create({
-    name: 'Demo User', email: 'demo@cityroute.in',
-    password: 'demo@123', role: 'user'
-  });
-  console.log('👤 Users seeded (admin@cityroute.in / admin@123)');
+const adminUser = await User.create({
+  name: 'Admin User',
+  email: 'admin@cityroute.in',
+  password: 'admin@123',
+  role: 'admin'
+});
+
+const demoUser = await User.create({
+  name: 'Demo User',
+  email: 'demo@cityroute.in',
+  password: 'demo@123',
+  role: 'user'
+});
+  console.log('👤 Users seeded (admin@cityroute.in / admin@123 & demo@cityroute.in / demo@123)');
 
   // ─── CITIES ───────────────────────────────────────────
   const delhi = await City.create({

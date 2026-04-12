@@ -17,12 +17,14 @@ export function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if (!form.email || !form.password) { setError('Email and password are required'); return; }
     setLoading(true);
     try {
-      const user = await login(form.email, form.password);
+      const user = await login(form.email.toLowerCase().trim(), form.password);
       navigate(user.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      const apiError = err.response?.data?.message || err.response?.data?.errors?.[0]?.msg || 'Login failed. Please try again.';
+      setError(apiError);
     } finally { setLoading(false); }
   };
 
@@ -82,17 +84,29 @@ export function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const validateForm = () => {
+    const newError = {};
+    if (!form.name.trim() || form.name.length < 2) return 'Name must be at least 2 characters';
+    if (!form.email || !/^\S+@\S+\.\S+$/.test(form.email)) return 'Valid email required';
+    if (form.password.length < 6) return 'Password must be at least 6 characters';
+    if (form.password !== form.confirmPassword) return 'Passwords do not match';
+    return '';
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (form.password !== form.confirmPassword) { setError('Passwords do not match.'); return; }
-    if (form.password.length < 6) { setError('Password must be at least 6 characters.'); return; }
+    
+    const validationError = validateForm();
+    if (validationError) { setError(validationError); return; }
+    
     setLoading(true);
     try {
-      await register(form.name, form.email, form.password);
+      await register(form.name.trim(), form.email.toLowerCase().trim(), form.password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      const apiError = err.response?.data?.message || err.response?.data?.errors?.[0]?.msg || 'Registration failed. Please try again.';
+      setError(apiError);
     } finally { setLoading(false); }
   };
 

@@ -13,12 +13,16 @@ exports.register = async (req, res, next) => {
 
     const { name, email, password } = req.body;
 
-    const existingUser = await User.findOne({ email });
+    // Check if email already exists
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
       return res.status(409).json({ success: false, message: 'Email already registered.' });
     }
 
-    const user = await User.create({ name, email, password });
+    // Create and save user (password hashing happens in pre-save hook)
+    const user = await User.create({ name: name.trim(), email: email.toLowerCase(), password });
+    
+    // Generate token
     const token = user.generateAuthToken();
 
     res.status(201).json({
@@ -44,18 +48,29 @@ exports.login = async (req, res, next) => {
 
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email }).select('+password');
-    if (!user || !(await user.comparePassword(password))) {
+    // Find user by normalized email and include password field
+    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    
+    // Check if user exists and password matches
+    if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
 
+    const isPasswordMatch = await user.comparePassword(password);
+    if (!isPasswordMatch) {
+      return res.status(401).json({ success: false, message: 'Invalid email or password.' });
+    }
+
+    // Check if account is active
     if (!user.isActive) {
       return res.status(403).json({ success: false, message: 'Account has been deactivated. Contact support.' });
     }
 
+    // Update last login timestamp
     user.lastLogin = new Date();
     await user.save({ validateBeforeSave: false });
 
+    // Generate and return token
     const token = user.generateAuthToken();
 
     res.json({

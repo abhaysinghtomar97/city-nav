@@ -23,13 +23,19 @@ const app = express();
 connectDB();
 
 
-// Security & middleware
-app.use(helmet());
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? process.env.FRONTEND_URL
-    : ['http://localhost:3000', 'http://localhost:5173'],
-  credentials: true
+// Security & middleware - CORS FIRST before everything
+const corsOptions = {
+  origin: ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173', 'http://127.0.0.1:5174', 'http://127.0.0.1:5175'],
+  credentials: true,
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  allowedHeaders: 'Content-Type,Authorization,x-session-id',
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -40,7 +46,10 @@ if (process.env.NODE_ENV === 'development') {
 
 // Rate limiting
 app.use('/api/', rateLimiter.general);
-app.use('/api/auth/', rateLimiter.auth);
+// Auth rate limiting disabled in development for easier testing
+if (process.env.NODE_ENV === 'production') {
+  app.use('/api/auth/', rateLimiter.auth);
+}
 
 // API routes
 app.use('/api/auth', authRoutes);

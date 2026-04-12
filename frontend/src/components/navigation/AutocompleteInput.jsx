@@ -90,7 +90,7 @@ export default function AutocompleteInput({ value, onChange, cityId, placeholder
       {open && suggestions.length > 0 && (
         <div className="autocomplete-dropdown">
           {suggestions.map((item) => (
-            <div key={item.id} className="autocomplete-item" onClick={() => handleSelect(item)}>
+            <div key={item.id || item._id || item.name} className="autocomplete-item" onClick={() => handleSelect(item)}>
               <span>{TYPE_ICONS[item.type] || '📍'}</span>
               <div>
                 <div style={{ fontWeight: 500 }}>{item.name}</div>
