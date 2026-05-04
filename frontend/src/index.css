@@ -1019,14 +1019,24 @@ tbody tr:last-child td {
   display: none;
 }
 
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none !important;
+  }
+}
+
 @media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+
   .mobile-menu-btn {
     display: flex;
   }
 
   .sidebar {
     position: fixed;
-    z-index: 90;
+    z-index: 1000;
     transform: translateX(-100%);
     transition: transform 0.3s ease;
   }
@@ -1152,3 +1162,4 @@ tbody tr:last-child td {
   color: var(--accent-blue-light);
   transform: rotate(180deg);
 }
+
