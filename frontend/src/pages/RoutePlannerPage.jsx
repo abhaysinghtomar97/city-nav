@@ -94,9 +94,9 @@ export default function RoutePlannerPage() {
         <p>Enter your journey details to find the shortest route and estimate fare</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'start' }}>
         {/* Planner Form */}
-        <div className="card" style={{ gridColumn: '1', padding: '2rem' }}>
+        <div className="card" style={{ padding: '2rem', flex: '1 1 400px', minWidth: 0 }}>
           <form onSubmit={handleSubmit}>
             {/* City */}
             <div className="form-group">
@@ -175,7 +175,7 @@ export default function RoutePlannerPage() {
         </div>
 
         {/* Info panel */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: '1 1 300px', minWidth: 0 }}>
           {/* How it works */}
           <div className="card">
             <div className="card-title" style={{ fontSize: '0.95rem', marginBottom: '0.75rem' }}>How it works</div>

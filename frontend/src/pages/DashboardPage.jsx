@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { historyApi, citiesApi, profileApi } from '../services/api';
 import { FiCompass, FiClock, FiMap, FiArrowRight } from 'react-icons/fi';
+import { Helmet } from 'react-helmet-async';
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -27,13 +28,17 @@ export function DashboardPage() {
 
   return (
     <div className="fade-in">
+      <Helmet>
+        <title>Dashboard | CityRoute</title>
+        <meta name="description" content="View your recent trips, available cities, and plan your next route on the CityRoute Dashboard." />
+      </Helmet>
       <div className="page-header">
         <h1>{greeting}, {user?.name?.split(' ')[0]}! 👋</h1>
         <p>Ready to navigate your next journey?</p>
       </div>
 
       {/* Quick action */}
-      <div style={{
+      <section style={{
         background: 'linear-gradient(135deg, rgba(59,130,246,0.12), rgba(20,184,166,0.06))',
         border: '1px solid rgba(59,130,246,0.2)', borderRadius: 'var(--radius-xl)',
         padding: '2rem', marginBottom: '1.5rem',
@@ -46,13 +51,13 @@ export function DashboardPage() {
         <button onClick={() => navigate('/planner')} className="btn btn-primary btn-lg">
           <FiCompass /> Plan Route <FiArrowRight />
         </button>
-      </div>
+      </section>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+      <section style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem' }}>
         {/* Recent trips */}
-        <div className="card">
+        <article className="card" style={{ flex: '1 1 300px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <div className="card-title" style={{ marginBottom: 0 }}>Recent Trips</div>
+            <h2 className="card-title" style={{ marginBottom: 0 }}>Recent Trips</h2>
             <Link to="/history" style={{ fontSize: '0.8rem', color: 'var(--accent-blue-light)' }}>View all</Link>
           </div>
           {loading ? (
@@ -74,11 +79,11 @@ export function DashboardPage() {
               )}
             </div>
           ))}
-        </div>
+        </article>
 
         {/* Available cities */}
-        <div className="card">
-          <div className="card-title">Available Cities</div>
+        <article className="card" style={{ flex: '1 1 300px' }}>
+          <h2 className="card-title">Available Cities</h2>
           {cities.map(c => (
             <div key={c._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.625rem 0', borderBottom: '1px solid rgba(30,45,74,0.4)' }}>
               <div>
@@ -90,8 +95,8 @@ export function DashboardPage() {
               </div>
             </div>
           ))}
-        </div>
-      </div>
+        </article>
+      </section>
     </div>
   );
 }
@@ -123,12 +128,16 @@ export function HistoryPage() {
 
   return (
     <div className="fade-in">
+      <Helmet>
+        <title>Trip History | CityRoute</title>
+        <meta name="description" content="View your past route searches and fare estimates." />
+      </Helmet>
       <div className="page-header">
         <h1><FiClock style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />Trip History</h1>
         <p>Your previous route searches and fare estimates</p>
       </div>
 
-      <div className="card">
+      <article className="card">
         {loading ? (
           <div>{[...Array(5)].map((_, i) => <div key={i} className="skeleton" style={{ height: 60, marginBottom: 8 }} />)}</div>
         ) : trips.length === 0 ? (
@@ -176,7 +185,7 @@ export function HistoryPage() {
             <button className="btn btn-secondary btn-sm" disabled={page >= pagination.pages} onClick={() => load(page + 1)}>Next</button>
           </div>
         )}
-      </div>
+      </article>
     </div>
   );
 }
@@ -220,14 +229,18 @@ export function ProfilePage() {
 
   return (
     <div className="fade-in">
+      <Helmet>
+        <title>Profile & Settings | CityRoute</title>
+        <meta name="description" content="Manage your account information and password." />
+      </Helmet>
       <div className="page-header">
         <h1>Profile & Settings</h1>
         <p>Manage your account information</p>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
+      <section style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'start' }}>
         {/* Profile */}
-        <div className="card">
-          <div className="card-title">Account Details</div>
+        <article className="card" style={{ flex: '1 1 400px', minWidth: 0 }}>
+          <h2 className="card-title">Account Details</h2>
           {msg && <div className={`alert ${msg.includes('!') ? 'alert-success' : 'alert-error'}`}>{msg}</div>}
           <form onSubmit={handleProfileSave}>
             <div className="form-group">
@@ -244,11 +257,11 @@ export function ProfilePage() {
             </div>
             <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Saving...' : 'Save Changes'}</button>
           </form>
-        </div>
+        </article>
 
         {/* Password */}
-        <div className="card">
-          <div className="card-title">Change Password</div>
+        <article className="card" style={{ flex: '1 1 400px', minWidth: 0 }}>
+          <h2 className="card-title">Change Password</h2>
           {pwMsg && <div className={`alert ${pwMsg.includes('!') ? 'alert-success' : 'alert-error'}`}>{pwMsg}</div>}
           <form onSubmit={handlePwChange}>
             {['currentPassword', 'newPassword', 'confirmNew'].map((field, i) => (
@@ -265,8 +278,8 @@ export function ProfilePage() {
           <button onClick={() => { logout(); navigate('/'); }} className="btn btn-danger btn-full">
             Logout from all sessions
           </button>
-        </div>
-      </div>
+        </article>
+      </section>
     </div>
   );
 }
