@@ -35,7 +35,7 @@ export default function Layout() {
       {/* Navbar */}
       <nav className="navbar">
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button className="btn btn-icon btn-secondary" style={{ display: 'none' }}
+          <button className="btn btn-icon btn-secondary mobile-menu-btn"
             onClick={() => setSidebarOpen(!sidebarOpen)}>
             {sidebarOpen ? <FiX /> : <FiMenu />}
           </button>
@@ -44,7 +44,7 @@ export default function Layout() {
             <span>CityRoute</span>
           </NavLink>
         </div>
-        <div className="navbar-links">
+        <div className={`navbar-links ${sidebarOpen ? 'open' : ''}`}>
           <NavLink to="/planner" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
             <FiCompass size={15} /> Plan Route
           </NavLink>
@@ -74,7 +74,7 @@ export default function Layout() {
       <div className="app-layout" style={{ flex: 1 }}>
         {/* Sidebar - only for authenticated users */}
         {isAuthenticated && (
-          <aside className="sidebar">
+          <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
             <div className="sidebar-section">
               <div className="sidebar-label">Navigation</div>
               {userLinks.map(link => (
