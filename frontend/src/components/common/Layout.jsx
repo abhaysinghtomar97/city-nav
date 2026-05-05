@@ -10,10 +10,13 @@ import { MdDirectionsBus } from 'react-icons/md';
 export default function Layout() {
   const { user, logout, isAdmin, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const handleLogout = () => { logout(); navigate('/'); };
+  const handleLogout = () => { 
+    setSidebarOpen(false);
+    logout(); 
+    navigate('/'); 
+  };
 
   const userLinks = [
     { to: '/dashboard', icon: <FiGrid />, label: 'Dashboard' },
@@ -33,70 +36,76 @@ export default function Layout() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       {/* Navbar */}
-      <nav className="navbar">
+      <header className="navbar">
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button className="btn btn-icon btn-secondary" style={{ display: 'none' }}
+          <button className="btn btn-icon btn-secondary mobile-menu-btn"
             onClick={() => setSidebarOpen(!sidebarOpen)}>
             {sidebarOpen ? <FiX /> : <FiMenu />}
           </button>
-          <NavLink to="/" className="navbar-brand">
+          <NavLink to="/" className="navbar-brand" onClick={() => setSidebarOpen(false)}>
             <MdDirectionsBus className="logo-icon" />
             <span>CityRoute</span>
           </NavLink>
         </div>
-        <div className="navbar-links">
+
+        {/* Desktop-only horizontal links */}
+        <nav className="navbar-links desktop-only">
           <NavLink to="/planner" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
             <FiCompass size={15} /> Plan Route
           </NavLink>
           {isAuthenticated ? (
-            <>
-              <NavLink to="/dashboard" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
-                <FiGrid size={15} /> Dashboard
-              </NavLink>
-              {isAdmin && (
-                <NavLink to="/admin" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>
-                  <FiSettings size={15} /> Admin
-                </NavLink>
-              )}
-              <button onClick={handleLogout} className="nav-link btn">
-                <FiLogOut size={15} /> Logout
-              </button>
-            </>
+            <button onClick={handleLogout} className="nav-link btn">
+              <FiLogOut size={15} /> Logout
+            </button>
           ) : (
-            <>
-              <NavLink to="/login" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>Login</NavLink>
-              <NavLink to="/register" className="nav-link btn-primary">Sign Up</NavLink>
-            </>
+            <NavLink to="/login" className="nav-link">Login</NavLink>
           )}
-        </div>
-      </nav>
+        </nav>
+      </header>
 
       <div className="app-layout" style={{ flex: 1 }}>
-        {/* Sidebar - only for authenticated users */}
-        {isAuthenticated && (
-          <aside className="sidebar">
+        {/* Unified Sidebar */}
+        <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+          <div className="sidebar-section">
+            <div className="sidebar-label">Navigation</div>
+            
+            {/* Added Plan Route to sidebar for mobile visibility */}
+            {/* <NavLink to="/planner" className="sidebar-link mobile-only" onClick={() => setSidebarOpen(false)}>
+              <span className="icon"><FiCompass /></span> Plan Route
+            </NavLink> */}
+
+            {userLinks.map(link => (
+              <NavLink key={link.to} to={link.to}
+                onClick={() => setSidebarOpen(false)}
+                className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
+                <span className="icon">{link.icon}</span> {link.label}
+              </NavLink>
+            ))}
+          </div>
+
+          {isAdmin && (
             <div className="sidebar-section">
-              <div className="sidebar-label">Navigation</div>
-              {userLinks.map(link => (
-                <NavLink key={link.to} to={link.to}
+              <div className="sidebar-label">Admin Panel</div>
+              {adminLinks.map(link => (
+                <NavLink key={link.to} to={link.to} end={link.to === '/admin'}
+                  onClick={() => setSidebarOpen(false)}
                   className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
                   <span className="icon">{link.icon}</span> {link.label}
                 </NavLink>
               ))}
             </div>
-            {isAdmin && (
-              <div className="sidebar-section">
-                <div className="sidebar-label">Admin Panel</div>
-                {adminLinks.map(link => (
-                  <NavLink key={link.to} to={link.to} end={link.to === '/admin'}
-                    className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
-                    <span className="icon">{link.icon}</span> {link.label}
-                  </NavLink>
-                ))}
-              </div>
-            )}
+          )}
+
+          <div style={{ marginTop: 'auto' }}>
+            {/* Logout button moved here for mobile users */}
+            <div className="sidebar-section mobile-only">
+               <button onClick={handleLogout} className="sidebar-link" style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer' }}>
+                  <span className="icon"><FiLogOut /></span> Logout
+               </button>
+            </div>
+
             {/* User info at bottom */}
-            <div style={{ marginTop: 'auto', padding: '0.75rem', borderTop: '1px solid var(--border)' }}>
+            <div style={{ padding: '0.75rem', borderTop: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.5rem' }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: '50%',
@@ -116,15 +125,15 @@ export default function Layout() {
                 </div>
               </div>
             </div>
-          </aside>
-        )}
+          </div>
+        </aside>
 
         {/* Main content */}
-        <div className="main-content">
+        <main className="main-content">
           <div className="page-content">
             <Outlet />
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );
